@@ -13,12 +13,14 @@ import java.sql.Timestamp;
 @Table(name = "LECTURE_SCHEDULE")
 public class LectureSchedule {
     @Id
+    @Column(name = "schedule_no")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer scheduleNo;
 
     @ManyToOne
     Lecture lecture;
 
+    @Column(name = "open_date", nullable = false)
     private Timestamp openDate;
 }
 

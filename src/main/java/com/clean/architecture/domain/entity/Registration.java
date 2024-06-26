@@ -14,6 +14,7 @@ import java.sql.Timestamp;
 @Table(name = "REGISTRATION")
 public class Registration {
     @Id
+    @Column(name = "registration_no")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer registrationNo;
 
@@ -23,6 +24,7 @@ public class Registration {
     @ManyToOne
     LectureSchedule lectureSchedule;
 
+    @Column(name = "registration_date", nullable = false)
     @CreationTimestamp
     private Timestamp registrationDate;
 }
