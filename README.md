@@ -11,19 +11,19 @@ erDiagram
         VARCHAR user_name "유저명"
     }
     HISTORY {
-        int history_no pk "히스토리번호"
+        NUMBER history_no pk "히스토리번호"
         FLOAT user_id fk "유저 ID"
         FLOAT schedule_no fk "스케줄 번호"
         TIMESTAMP create_date "생성일"
     }
     REGISTRATION {
-        int registration_no pk "등록번호"
+        NUMBER registration_no pk "등록번호"
         FLOAT user_id fk "유저 ID"
-        FLOAT schedule_no fk "스케줄 번호"
-        TIMESTAMP create_date "생성일"
+        NUMBER schedule_no fk "스케줄 번호"
+        TIMESTAMP registration_date "등록일"
     }
     LECTURE_SCHEDULE {
-        FLOAT schedule_no pk "스케줄 번호"
+        NUMBER schedule_no pk "스케줄 번호"
         NUMBER lecture_no fk "강의 번호"
         TIMESTAMP open_date "강의오픈날짜"
     }
