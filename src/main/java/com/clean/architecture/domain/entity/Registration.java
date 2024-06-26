@@ -24,6 +24,6 @@ public class Registration {
     LectureSchedule lectureSchedule;
 
     @CreationTimestamp
-    private Timestamp createDate;
+    private Timestamp registrationDate;
 }
 
