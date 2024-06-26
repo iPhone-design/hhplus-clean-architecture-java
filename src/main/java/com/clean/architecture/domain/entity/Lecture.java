@@ -13,7 +13,7 @@ public class Lecture {
     @Id
     @Column(name = "lecture_no")
     @GeneratedValue(strategy = GenerationType.IDENTITY) // GenerationType.IDENTITY : AUTO_INCREMENT
-    private int lectureNo;
+    private Integer lectureNo;
 
     @Column(name = "lecture_name", nullable = false)
     private String lectureName;

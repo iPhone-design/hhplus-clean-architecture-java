@@ -14,7 +14,7 @@ import java.sql.Timestamp;
 public class LectureSchedule {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int schedule_no;
+    private Integer scheduleNo;
 
     @ManyToOne
     Lecture lecture;

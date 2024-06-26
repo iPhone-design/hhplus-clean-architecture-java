@@ -15,7 +15,7 @@ import java.sql.Timestamp;
 public class History {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int history_no;
+    private Integer historyNo;
 
     @ManyToOne
     private Student student;

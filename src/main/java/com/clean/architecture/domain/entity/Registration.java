@@ -15,7 +15,7 @@ import java.sql.Timestamp;
 public class Registration {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int registration_no;
+    private Integer registrationNo;
 
     @ManyToOne
     Student student;
