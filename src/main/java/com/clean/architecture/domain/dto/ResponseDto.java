@@ -9,5 +9,7 @@ import java.util.List;
 @Setter
 public class ResponseDto {
     private Boolean success;
+    private String message;
+    private HistoryDto historyDto;
     private List<RegistrationDto> listRegistrationDto;
 }

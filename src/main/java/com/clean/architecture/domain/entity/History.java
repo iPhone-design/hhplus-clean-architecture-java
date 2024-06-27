@@ -32,4 +32,9 @@ public class History {
     @Column(name = "create_date", nullable = false)
     @CreationTimestamp
     private Timestamp createDate;
+
+    public History(Student student, LectureSchedule lectureSchedule) {
+        this.student = student;
+        this.lectureSchedule = lectureSchedule;
+    }
 }
