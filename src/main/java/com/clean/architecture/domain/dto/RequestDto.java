@@ -8,4 +8,5 @@ import lombok.Setter;
 public class RequestDto {
     private Long userId;
     private Integer lectureNo;
+    private Integer scheduleNo;
 }
