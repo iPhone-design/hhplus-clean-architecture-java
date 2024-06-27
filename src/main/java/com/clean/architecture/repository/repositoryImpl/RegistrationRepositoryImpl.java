@@ -7,6 +7,7 @@ import com.clean.architecture.domain.entity.Registration;
 import com.clean.architecture.domain.entity.Student;
 import com.clean.architecture.repository.customRepositroy.RegistrationRepositoryCustom;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -38,23 +39,31 @@ public class RegistrationRepositoryImpl implements RegistrationRepositoryCustom 
         Long userId = registrationDto.getUserId();
         Integer scheduleNo = registrationDto.getScheduleNo();
 
-        // Student Entity 생성
-        Student student = new Student();
-        student.setUserId(userId);
-
-        // LectureSchedule Entity 생성
-        LectureSchedule lectureSchedule = new LectureSchedule();
-        lectureSchedule.setScheduleNo(scheduleNo);
-
-        // Registration Entity 생성
-        Registration registration = new Registration(student, lectureSchedule);
-
-        // 저장
-        em.persist(registration);
-        
         // ResponseDto 객체 생성
         ResponseDto responseDto = new ResponseDto();
-        responseDto.setSuccess(true);
+
+        try {
+            // Student Entity 생성
+            Student student = new Student();
+            student.setUserId(userId);
+
+            // LectureSchedule Entity 생성
+            LectureSchedule lectureSchedule = new LectureSchedule();
+            lectureSchedule.setScheduleNo(scheduleNo);
+
+            // Registration Entity 생성
+            Registration registration = new Registration(student, lectureSchedule);
+
+            // 저장
+            em.persist(registration);
+            responseDto.setSuccess(true);
+        }
+        catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        finally {
+            em.close();
+        }
 
         return responseDto;
     }
@@ -70,19 +79,28 @@ public class RegistrationRepositoryImpl implements RegistrationRepositoryCustom 
     @Override
     @Transactional
     public List<RegistrationDto> findAllRegistrationByUserId(RegistrationDto registrationDto) {
-        // 조회
-        String query = "SELECT r FROM Registration r WHERE r.student.userId = :userId";
-        List<Registration> typedQuery = em.createQuery(query, Registration.class).setParameter("userId", registrationDto.getUserId()).getResultList();
-        
-        // Dto 변환
+        // List<RegistrationDto> 객체 생성
         List<RegistrationDto> listRegistrationDto = new ArrayList<>();
-        for (Registration registration : typedQuery) {
-            RegistrationDto temp = new RegistrationDto();
-            temp.setRegistrationNo(registration.getRegistrationNo());
-            temp.setUserId(registration.getStudent().getUserId());
-            temp.setScheduleNo(registration.getLectureSchedule().getScheduleNo());
-            temp.setRegistrationDate(registration.getRegistrationDate());
-            listRegistrationDto.add(temp);
+
+        try {
+            // 조회
+            String query = "SELECT r FROM Registration r WHERE r.student.userId = :userId";
+            List<Registration> typedQuery = em.createQuery(query, Registration.class).setParameter("userId", registrationDto.getUserId()).getResultList();
+
+            for (Registration registration : typedQuery) {
+                RegistrationDto temp = new RegistrationDto();
+                temp.setRegistrationNo(registration.getRegistrationNo());
+                temp.setUserId(registration.getStudent().getUserId());
+                temp.setScheduleNo(registration.getLectureSchedule().getScheduleNo());
+                temp.setRegistrationDate(registration.getRegistrationDate());
+                listRegistrationDto.add(temp);
+            }
+        }
+        catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        finally {
+            em.close();
         }
 
         return listRegistrationDto;
