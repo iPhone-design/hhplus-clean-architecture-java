@@ -7,6 +7,7 @@ import com.clean.architecture.domain.entity.Registration;
 import com.clean.architecture.domain.entity.Student;
 import com.clean.architecture.repository.customRepositroy.RegistrationRepositoryCustom;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -22,6 +23,45 @@ public class RegistrationRepositoryImpl implements RegistrationRepositoryCustom 
     @Autowired
     public RegistrationRepositoryImpl(EntityManager entityManager) {
         this.em = entityManager;
+    }
+
+    /**
+     * 등록 조회 (userId And scheduleNo 기준)
+     *
+     * @author  양종문
+     * @since   2024-06-27
+     * @param   registrationDto
+     * @return  listRegistrationDto
+     */
+    @Override
+    @Transactional
+    public ResponseDto checkRegistrationByUserIdAndScheduleNo(RegistrationDto registrationDto) {
+        // ResponseDto 객체 생성
+        ResponseDto responseDto = new ResponseDto();
+
+        // List<RegistrationDto> 객체 생성
+        List<RegistrationDto> listRegistrationDto = new ArrayList<>();
+
+        try {
+            // 조회
+            String query = "SELECT r FROM Registration r WHERE r.student.userId = :userId AND r.lectureSchedule.scheduleNo = :scheduleNo";
+            List<Registration> typedQuery = em.createQuery(query, Registration.class)
+                                              .setParameter("userId", registrationDto.getUserId())
+                                              .setParameter("scheduleNo", registrationDto.getScheduleNo())
+                                              .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+                                              .getResultList();
+
+            responseDto.setSuccess(typedQuery.isEmpty());
+        }
+        catch (Exception e) {
+            responseDto.setMessage(e.getMessage());
+            responseDto.setSuccess(false);
+        }
+        finally {
+            em.close();
+        }
+
+        return responseDto;
     }
 
     /**
@@ -42,6 +82,7 @@ public class RegistrationRepositoryImpl implements RegistrationRepositoryCustom 
             String query = "SELECT r FROM Registration r WHERE r.lectureSchedule.scheduleNo = :scheduleNo";
             List<Registration> typedQuery = em.createQuery(query, Registration.class)
                                               .setParameter("scheduleNo", registrationDto.getScheduleNo())
+                                              .setLockMode(LockModeType.PESSIMISTIC_WRITE)
                                               .getResultList();
 
             for (Registration registration : typedQuery) {
@@ -82,6 +123,7 @@ public class RegistrationRepositoryImpl implements RegistrationRepositoryCustom 
             String query = "SELECT r FROM Registration r WHERE r.student.userId = :userId";
             List<Registration> typedQuery = em.createQuery(query, Registration.class)
                                               .setParameter("userId", registrationDto.getUserId())
+                                              .setLockMode(LockModeType.PESSIMISTIC_WRITE)
                                               .getResultList();
 
             for (Registration registration : typedQuery) {
@@ -121,6 +163,10 @@ public class RegistrationRepositoryImpl implements RegistrationRepositoryCustom 
         ResponseDto responseDto = new ResponseDto();
 
         try {
+            // 비관적 락 적용
+            em.find(Student.class, userId, LockModeType.PESSIMISTIC_WRITE);
+            em.find(LectureSchedule.class, scheduleNo, LockModeType.PESSIMISTIC_WRITE);
+
             // Student Entity 생성
             Student student = new Student();
             student.setUserId(userId);
@@ -134,6 +180,9 @@ public class RegistrationRepositoryImpl implements RegistrationRepositoryCustom 
 
             // 저장
             em.persist(registration);
+
+            // 트랜잭션 커밋 시점에서 flush
+            em.flush();
         }
         catch (Exception e) {
             System.out.println(e.getMessage());

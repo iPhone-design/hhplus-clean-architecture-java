@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface RegistrationRepositoryCustom  {
     ResponseDto saveRegistration(RegistrationDto registrationDto);
+    ResponseDto checkRegistrationByUserIdAndScheduleNo(RegistrationDto registrationDto);
     List<RegistrationDto> findAllRegistrationByScheduleNo(RegistrationDto registrationDto);
     List<RegistrationDto> findAllRegistrationByUserId(RegistrationDto registrationDto);
 }

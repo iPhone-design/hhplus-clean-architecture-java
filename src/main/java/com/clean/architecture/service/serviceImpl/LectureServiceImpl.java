@@ -7,6 +7,7 @@ import com.clean.architecture.domain.dto.ResponseDto;
 import com.clean.architecture.repository.HistoryRepository;
 import com.clean.architecture.repository.RegistrationRepository;
 import com.clean.architecture.service.LectureService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,6 +37,7 @@ public class LectureServiceImpl implements LectureService {
      * @return  ResponseDto
      */
     @Override
+    @Transactional
     public ResponseDto applyLecture(RequestDto requestDto) {
         Long userId = requestDto.getUserId();
         Integer scheduleNo = requestDto.getScheduleNo();
@@ -43,31 +45,30 @@ public class LectureServiceImpl implements LectureService {
         ResponseDto responseDto = new ResponseDto();
 
         try {
-            // 등록 내역 조회
+            // 등록 내역 체크
             RegistrationDto paramRegistrationDto = new RegistrationDto();
+            paramRegistrationDto.setUserId(userId);
             paramRegistrationDto.setScheduleNo(scheduleNo);
-            List<RegistrationDto> listRegistrationDto = registrationRepository.findAllRegistrationByScheduleNo(paramRegistrationDto);
+            ResponseDto checkedResponseDto = registrationRepository.checkRegistrationByUserIdAndScheduleNo(paramRegistrationDto);
             
-            // 동일한 신청자 체크
-            long resultCnt = listRegistrationDto.stream().filter((registrationDto) -> (userId).equals(registrationDto.getUserId())).count();
-            if (resultCnt > 0) {
+            if (!checkedResponseDto.getSuccess()) {
                 responseDto.setMessage("이미 특강 신청 완료된 학생입니다.");
                 responseDto.setSuccess(false);
                 return responseDto;
             }
-            
-            // 신청자 30명 초과 체크 => TODO 추후에 최대 신청자 수 컬럼을 추가 하여 관리 
+
+            // 신청자 30명 초과 체크 => TODO 추후에 최대 신청자 수 컬럼을 추가 하여 관리
+            List<RegistrationDto> listRegistrationDto = registrationRepository.findAllRegistrationByScheduleNo(paramRegistrationDto);
             if (listRegistrationDto.size() >= 30) {
-                responseDto.setMessage("특강 신청 인원 마감되었습니다. (30명)");
-                responseDto.setSuccess(false);
-                return responseDto;
+                checkedResponseDto.setMessage("특강 신청 인원 마감되었습니다. (30명)");
+                checkedResponseDto.setSuccess(false);
+                return checkedResponseDto;
             }
 
             // 특강 등록
-            paramRegistrationDto.setUserId(userId);
             registrationRepository.saveRegistration(paramRegistrationDto);
 
-            // 히스토리 저장
+            // 히스토리 저장 (성공한 경우에만 등록)
             HistoryDto historyDto = new HistoryDto();
             historyDto.setUserId(userId);
             historyDto.setScheduleNo(scheduleNo);
@@ -111,7 +112,6 @@ public class LectureServiceImpl implements LectureService {
         // ResponseDto 객체 생성
         ResponseDto responseDto = new ResponseDto();
         responseDto.setListRegistrationDto(listRegistrationDto);
-        responseDto.setSuccess(!listRegistrationDto.isEmpty());
 
         return responseDto;
     }
